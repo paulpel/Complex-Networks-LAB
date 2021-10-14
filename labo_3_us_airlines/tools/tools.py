@@ -19,7 +19,6 @@ class UsAirlines:
         self.create_output_dir()
         self.export_json()
         self.print_graph()
-        print(len(self.airport_data['connections']))
     
     def load_data(self):
         file_path = os.path.join(self.script_path, 'data', 'USAir97.net')
