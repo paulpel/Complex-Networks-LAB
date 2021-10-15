@@ -8,6 +8,7 @@ class UsAirlines:
 
     def __init__(self, script_path) -> None:
         self.script_path = script_path
+        self.nodes_to_take = [311, 150, 248, 118, 293, 258, 69, 161, 263]
         self.airport_data = {
             "airports": {},
             "connections": []
@@ -18,6 +19,7 @@ class UsAirlines:
         self.load_data()
         self.create_output_dir()
         self.export_json()
+        self.limit_edges()
         self.print_graph()
     
     def load_data(self):
@@ -64,12 +66,20 @@ class UsAirlines:
         with open(output_path, 'w') as jf:
             json.dump(self.airport_data, jf, indent=2)
 
-    def prepare_for_networkx(self):
+    def prepare_for_networkx(self, limited=False):
         labels = {}
         pos = {}
         for airport in self.airport_data['airports']:
-            labels[int(airport)] = self.airport_data['airports'][airport]['name']
-            pos[int(airport)] = self.airport_data['airports'][airport]['x_y_z_cords'][:-1]
+            if limited:
+                if int(airport) in self.nodes_to_take:
+                    labels[int(airport)] = self.airport_data['airports'][airport]['name']
+                    pos[int(airport)] = self.airport_data['airports']\
+                        [airport]['x_y_z_cords'][:-1]
+
+            else:
+                labels[int(airport)] = self.airport_data['airports'][airport]['name']
+                pos[int(airport)] = self.airport_data['airports']\
+                    [airport]['x_y_z_cords'][:-1]
 
         return labels, pos
 
@@ -86,9 +96,16 @@ class UsAirlines:
     def print_graph(self):
         fig, ax = plt.subplots(figsize=(15,8))
         G = nx.Graph()
-        G.add_weighted_edges_from(self.airport_data['connections'])
+        if self.nodes_to_take:
+            edges = self.limit_edges()
+            labels, pos = self.prepare_for_networkx(True)
+        else:
+            edges = self.airport_data['connections']
+            labels, pos = self.prepare_for_networkx()
 
-        labels, pos = self.prepare_for_networkx()
+        G.add_weighted_edges_from(edges)
+
+        
         color_map = self.color_specific_nodes(G)
 
         nx.draw(G, pos=pos, labels=labels, with_labels=True, font_size=6,
@@ -98,3 +115,11 @@ class UsAirlines:
         fig.set_facecolor('#6D9BC3')
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
         plt.show()
+
+    def limit_edges(self):
+        nodes_to_take = self.nodes_to_take
+        filtered_connections = []
+        for connection in self.airport_data['connections']:
+            if connection[0] in nodes_to_take and connection[1] in nodes_to_take:
+                filtered_connections.append(connection)
+        return filtered_connections
