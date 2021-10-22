@@ -3,17 +3,20 @@ import json
 import shutil
 import networkx as nx
 import matplotlib.pyplot as plt
+from .colors_terminal import bcolors
 
 
 class UsAirlines:
 
-    def __init__(self, script_path, limited) -> None:
+    def __init__(self, script_path, limited, show_graph, show_labels) -> None:
         self.script_path = script_path
         self.nodes_to_take = [
             311, 150, 248, 118, 293, 258, 69, 161, 263, 261, 297, 4, 1, 2, 8
             ]
         self.highlitght = []
         self.limited = limited
+        self.show_graph = show_graph
+        self.show_labels = show_labels
         self.airport_data = {
             "airports": {},
             "connections": []
@@ -112,18 +115,23 @@ class UsAirlines:
             edges = self.airport_data['connections']
             labels, pos = self.prepare_for_networkx()
 
+        if not self.show_labels:
+            labels = None
+
         G.add_weighted_edges_from(edges)
 
         color_map = self.color_specific_nodes(G)
 
         nx.draw(
             G, pos=pos, labels=labels, with_labels=True,
-            font_size=6, edge_color='#C8A2C8', node_size=200,
+            font_size=8, edge_color='#C8A2C8', node_size=200,
             node_color=color_map, node_shape='h')
 
         fig.set_facecolor('#6D9BC3')
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-        plt.show()
+        self.print_graph_character(G)
+        if self.show_graph:
+            plt.show()
 
     def limit_edges(self):
         nodes_to_take = self.nodes_to_take
@@ -133,3 +141,44 @@ class UsAirlines:
                     connection[1] in nodes_to_take):
                 filtered_connections.append(connection)
         return filtered_connections
+
+    def print_graph_character(self, G):
+        density = nx.density(G)
+        degree = nx.degree(G)
+        close = nx.closeness_centrality(G)
+        between = nx.betweenness_centrality(G)
+        diameter = nx.diameter(G)
+        connected_c = nx.connected_components(G)
+        n = 4
+        connected_n = nx.is_k_edge_connected(G, n)
+        connectivity_e = nx.edge_connectivity(G)
+        connectivity_n = nx.node_connectivity(G)
+        edges = nx.number_of_edges(G)
+        nodes = nx.number_of_nodes(G)
+        path_av = nx.average_shortest_path_length(G)
+        cliques = nx.find_cliques(G)
+
+        print(f"{bcolors.OKCYAN}Stopnie: {bcolors.ENDC}{degree}")
+        print(f'{bcolors.OKCYAN}Gęstość: {bcolors.ENDC}{density}')
+        print(f"{bcolors.OKCYAN}Bliskość: {bcolors.ENDC}{close}")
+        print(f"{bcolors.OKCYAN}Pośrednictwo: {bcolors.ENDC}{between}")
+        print(f"{bcolors.OKCYAN}Średnica {bcolors.ENDC}{diameter}")
+        for x in connected_c:
+            print(f"{bcolors.OKCYAN}Składowa spójna: {bcolors.ENDC}", x)
+        print(
+            f"{bcolors.OKCYAN}Czy jest k-spójny dla k={n}:"
+            f"{bcolors.ENDC}{connected_n}")
+        print(
+            f"{bcolors.OKCYAN}Spójność krawędziowa: "
+            f"{bcolors.ENDC}{connectivity_e}")
+        print(
+            f"{bcolors.OKCYAN}Spójność wierzchołkowa: "
+            f"{bcolors.ENDC}{connectivity_n}")
+        print(f"{bcolors.OKCYAN}Ilość krawędzi: {bcolors.ENDC}{edges}")
+        print(f"{bcolors.OKCYAN}Ilość wierzchołków: {bcolors.ENDC}{nodes}")
+        print(
+            f"{bcolors.OKCYAN}Średnia długość ścieki: "
+            f"{bcolors.ENDC}{path_av}")
+        print(f"{bcolors.OKCYAN}Kliki: {bcolors.ENDC}")
+        for x in cliques:
+            print(x)

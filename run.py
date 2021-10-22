@@ -19,6 +19,23 @@ parser.add_argument(
     default=False,
     dest='limited',
 )
+parser.add_argument(
+    '-sg',
+    '--show_graph',
+    help='Plot graph.',
+    action='store_true',
+    default=False,
+    dest='show_graph',
+)
+parser.add_argument(
+    '-sl',
+    '--show_labels',
+    help='Show node labels',
+    action='store_true',
+    default=False,
+    dest='show_labels',
+)
+
 args = parser.parse_args()
 paths = {
     "1": os.path.join('labo_1_geralt', 'geralt.py'),
@@ -31,4 +48,4 @@ if args.project in ['1', '2']:
     script_path = os.path.join(script_path, paths[args.project])
     subprocess.run(['python', script_path])
 elif args.project == '3':
-    main_airlines(args.limited)
+    main_airlines(args.limited, args.show_graph, args.show_labels)
