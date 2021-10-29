@@ -156,7 +156,8 @@ class UsAirlines:
         edges = nx.number_of_edges(G)
         nodes = nx.number_of_nodes(G)
         path_av = nx.average_shortest_path_length(G)
-        cliques = nx.find_cliques(G)
+        cliques = [x for x in nx.find_cliques(G)]
+        max_cliques = self.maximum_cliques(cliques)
 
         print(f"{bcolors.OKCYAN}Stopnie: {bcolors.ENDC}{degree}")
         print(f'{bcolors.OKCYAN}Gęstość: {bcolors.ENDC}{density}')
@@ -179,6 +180,23 @@ class UsAirlines:
         print(
             f"{bcolors.OKCYAN}Średnia długość ścieki: "
             f"{bcolors.ENDC}{path_av}")
-        print(f"{bcolors.OKCYAN}Kliki: {bcolors.ENDC}")
+        print(f"{bcolors.OKCYAN}Maksymalne kliki wierzchołków: {bcolors.ENDC}")
         for x in cliques:
             print(x)
+        print(f"{bcolors.OKCYAN}Maksymalne kliki grafu: {bcolors.ENDC}")
+        for x in max_cliques:
+            print(x)
+
+    def maximum_cliques(self, cliques):
+        lenght = 0
+        max_cliques = []
+
+        for clique in cliques:
+            if len(clique) > lenght:
+                lenght = len(clique)
+
+        for clique in cliques:
+            if len(clique) == lenght:
+                max_cliques.append(clique)
+
+        return max_cliques
