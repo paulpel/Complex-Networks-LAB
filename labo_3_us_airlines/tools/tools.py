@@ -11,7 +11,7 @@ class UsAirlines:
     def __init__(self, script_path, limited, show_graph, show_labels) -> None:
         self.script_path = script_path
         self.nodes_to_take = [
-            311, 150, 248, 118, 293, 258, 69, 161, 263, 261, 297, 4, 1, 2, 8
+            311, 150, 248, 118, 293, 258, 69, 161, 263, 261, 297, 4, 1, 2, 8, 6
             ]
         self.highlitght = []
         self.limited = limited
@@ -108,6 +108,7 @@ class UsAirlines:
     def print_graph(self):
         fig, ax = plt.subplots(figsize=(15, 8))
         G = nx.Graph()
+
         if self.limited:
             edges = self.limit_edges()
             labels, pos = self.prepare_for_networkx(True)
@@ -120,6 +121,7 @@ class UsAirlines:
 
         G.add_weighted_edges_from(edges)
 
+        self.print_graph_character(G)
         color_map = self.color_specific_nodes(G)
 
         nx.draw(
@@ -129,7 +131,7 @@ class UsAirlines:
 
         fig.set_facecolor('#6D9BC3')
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-        self.print_graph_character(G)
+
         if self.show_graph:
             plt.show()
 
@@ -158,6 +160,11 @@ class UsAirlines:
         path_av = nx.average_shortest_path_length(G)
         cliques = [x for x in nx.find_cliques(G)]
         max_cliques = self.maximum_cliques(cliques)
+        cliques_bigger_than_3 = len(
+            [x for x in nx.enumerate_all_cliques(G) if len(x) >= 3])
+        self.highlitght = self.color_max_cliques(max_cliques)
+        adjacency_matrix = nx.adjacency_matrix(G, weight=None)
+        incidence_matrix = nx.incidence_matrix(G, weight=None, oriented=False)
 
         print(f"{bcolors.OKCYAN}Stopnie: {bcolors.ENDC}{degree}")
         print(f'{bcolors.OKCYAN}Gęstość: {bcolors.ENDC}{density}')
@@ -186,6 +193,15 @@ class UsAirlines:
         print(f"{bcolors.OKCYAN}Maksymalne kliki grafu: {bcolors.ENDC}")
         for x in max_cliques:
             print(x)
+        print(
+            f"{bcolors.OKCYAN}Liczba klik większych/równych 3: "
+            f"{bcolors.ENDC}{cliques_bigger_than_3}")
+        print(f"{bcolors.OKCYAN}Macierz sąsiedctwa: {bcolors.ENDC}")
+        print(f"Wierzchołki: {G.nodes()}")
+        print(adjacency_matrix.todense())
+        print(f"{bcolors.OKCYAN}Macierz incydencji: {bcolors.ENDC}")
+        print(f"Wierzchołki: {G.nodes()}")
+        print(incidence_matrix.todense())
 
     def maximum_cliques(self, cliques):
         lenght = 0
@@ -200,3 +216,11 @@ class UsAirlines:
                 max_cliques.append(clique)
 
         return max_cliques
+
+    def color_max_cliques(self, max_cliques):
+        set_nodes = set()
+        for clique in max_cliques:
+            for node in clique:
+                set_nodes.add(node)
+
+        return list(set_nodes)
