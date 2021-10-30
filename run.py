@@ -1,7 +1,9 @@
 import argparse
 import os
 import subprocess
+import time
 from labo_3_us_airlines.us_airlines import main_airlines
+from labo_3_us_airlines.tools.colors_terminal import bcolors
 
 parser = argparse.ArgumentParser("Complex Network Module")
 
@@ -48,4 +50,10 @@ if args.project in ['1', '2']:
     script_path = os.path.join(script_path, paths[args.project])
     subprocess.run(['python', script_path])
 elif args.project == '3':
+    start_time = time.time()
     main_airlines(args.limited, args.show_graph, args.show_labels)
+    end_time = time.time()
+    print(
+        f"{bcolors.FAIL}Run time:"
+        f" {bcolors.ENDC} --- {end_time-start_time} --- seconds")
+    
