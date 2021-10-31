@@ -37,6 +37,14 @@ parser.add_argument(
     default=False,
     dest='show_labels',
 )
+parser.add_argument(
+    '-ps',
+    '--print_stats',
+    help='Print graph statistics',
+    action='store_true',
+    default=False,
+    dest='print_stats',
+)
 
 args = parser.parse_args()
 paths = {
@@ -51,9 +59,14 @@ if args.project in ['1', '2']:
     subprocess.run(['python', script_path])
 elif args.project == '3':
     start_time = time.time()
-    main_airlines(args.limited, args.show_graph, args.show_labels)
+
+    main_airlines(
+        args.limited,
+        args.show_graph,
+        args.show_labels,
+        args.print_stats)
+
     end_time = time.time()
     print(
         f"{bcolors.FAIL}Run time:"
         f" {bcolors.ENDC} --- {end_time-start_time} --- seconds")
-    
