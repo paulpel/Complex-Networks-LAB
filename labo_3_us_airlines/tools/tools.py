@@ -251,5 +251,5 @@ class UsAirlines:
         print(x, y)
         fig, ax = plt.subplots(figsize=(15, 8))
 
-        ax.scatter(x, y)
+        ax.loglog(x, y, label='log')
         plt.savefig("fig.png")
