@@ -126,7 +126,7 @@ class UsAirlines:
 
         G.add_weighted_edges_from(edges)
 
-        self.print_graph_character(G)
+        degree = self.print_graph_character(G)
         color_map = self.color_specific_nodes(G)
 
         nx.draw(
@@ -136,6 +136,8 @@ class UsAirlines:
 
         fig.set_facecolor('#6D9BC3')
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+
+        self.node_degree_hist(list(degree))
 
         if self.show_graph:
             plt.show()
@@ -213,6 +215,7 @@ class UsAirlines:
                 print(adjacency_matrix.todense())
                 print(f"{bcolors.OKCYAN}Macierz incydencji: {bcolors.ENDC}")
                 print(incidence_matrix.todense())
+        return degree
 
     def maximum_cliques(self, cliques):
         lenght = 0
@@ -235,3 +238,18 @@ class UsAirlines:
                 set_nodes.add(node)
 
         return list(set_nodes)
+
+    def node_degree_hist(self, degree):
+        degree.sort(key=lambda x: x[1], reverse=True)
+        print(degree)
+        x = []
+        y = []
+        for pair in degree:
+            x.append(str(pair[0]))
+            y.append(pair[1])
+
+        print(x, y)
+        fig, ax = plt.subplots(figsize=(15, 8))
+
+        ax.scatter(x, y)
+        plt.savefig("fig.png")
