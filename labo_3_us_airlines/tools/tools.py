@@ -128,7 +128,8 @@ class UsAirlines:
 
         degree = self.print_graph_character(G)
         color_map = self.color_specific_nodes(G)
-
+        self.node_degree_hist(list(degree))
+        
         nx.draw(
             G, pos=pos, labels=labels, with_labels=True,
             font_size=8, edge_color='#C8A2C8', node_size=200,
@@ -136,8 +137,6 @@ class UsAirlines:
 
         fig.set_facecolor('#6D9BC3')
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-
-        self.node_degree_hist(list(degree))
 
         if self.show_graph:
             plt.show()
@@ -240,16 +239,25 @@ class UsAirlines:
         return list(set_nodes)
 
     def node_degree_hist(self, degree):
-        degree.sort(key=lambda x: x[1], reverse=True)
-        print(degree)
-        x = []
-        y = []
-        for pair in degree:
-            x.append(str(pair[0]))
-            y.append(pair[1])
+        graphs_dir = os.path.join(self.script_path, 'graphs')
 
-        print(x, y)
         fig, ax = plt.subplots(figsize=(15, 8))
+        degree.sort(key=lambda x: x[1], reverse=False)
+        node_connections = [x[1] for x in degree]
+        x_no_duplicates = []
+        y_count = []
+        for amount in node_connections:
+            if amount not in x_no_duplicates:
+                x_no_duplicates.append(amount)
+        
+        for amount in x_no_duplicates:
+            y_count.append(node_connections.count(amount))
 
-        ax.loglog(x, y, label='log')
-        plt.savefig("fig.png")
+        ax.bar(x_no_duplicates, y_count, align='center')
+        plt.xlabel('Node degree')
+        plt.ylabel('Frequency')
+        for i in range(len(y_count)):
+            ax.hlines(y_count[i], 0, x_no_duplicates[i])
+        ax.plot(x_no_duplicates, y_count, 'r')
+        plt.savefig(graphs_dir)
+        plt.close()
