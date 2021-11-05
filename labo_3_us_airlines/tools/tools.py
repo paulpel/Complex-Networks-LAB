@@ -129,13 +129,14 @@ class UsAirlines:
         degree = self.print_graph_character(G)
         color_map = self.color_specific_nodes(G)
         self.node_degree_hist(list(degree))
-        
+
         nx.draw(
             G, pos=pos, labels=labels, with_labels=True,
             font_size=8, edge_color='#C8A2C8', node_size=200,
             node_color=color_map, node_shape='h')
 
         fig.set_facecolor('#6D9BC3')
+        fig.canvas.set_window_title('USA airline connections 1997')
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
 
         if self.show_graph:
@@ -239,7 +240,8 @@ class UsAirlines:
         return list(set_nodes)
 
     def node_degree_hist(self, degree):
-        graphs_dir = os.path.join(self.script_path, 'graphs')
+        graphs_dir = os.path.join(
+            self.script_path, 'graphs', 'node_degree.png')
 
         fig, ax = plt.subplots(figsize=(15, 8))
         degree.sort(key=lambda x: x[1], reverse=False)
@@ -249,7 +251,7 @@ class UsAirlines:
         for amount in node_connections:
             if amount not in x_no_duplicates:
                 x_no_duplicates.append(amount)
-        
+
         for amount in x_no_duplicates:
             y_count.append(node_connections.count(amount))
 
