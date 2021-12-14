@@ -136,7 +136,7 @@ class UsAirlines:
             node_color=color_map, node_shape='h')
 
         edge_labels = self.edge_weight_labels(edges)
-        # nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color='red')
+        nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color='red')
 
         fig.set_facecolor('#6D9BC3')
         fig.canvas.set_window_title('USA airline connections 1997')
@@ -276,7 +276,7 @@ class UsAirlines:
             value = connection[2]
 
             edge_labels[key] = value
-            
+
             if value > max_val:
                 max_val = value
                 print(max_val, connection)
