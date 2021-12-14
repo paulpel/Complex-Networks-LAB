@@ -17,7 +17,7 @@ class UsAirlines:
         self.nodes_to_take = [
             311, 150, 248, 118, 293, 258, 69, 161, 263, 261, 297, 4, 1, 2, 8, 6
             ]
-        self.highlitght = []
+        self.highlitght = [248, 331, 13, 14]
         self.limited = limited
         self.show_graph = show_graph
         self.show_labels = show_labels
@@ -135,6 +135,9 @@ class UsAirlines:
             font_size=8, edge_color='#C8A2C8', node_size=200,
             node_color=color_map, node_shape='h')
 
+        edge_labels = self.edge_weight_labels(edges)
+        # nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color='red')
+
         fig.set_facecolor('#6D9BC3')
         fig.canvas.set_window_title('USA airline connections 1997')
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
@@ -170,7 +173,7 @@ class UsAirlines:
         if self.limited:
             cliques_bigger_than_3 = len(
                 [x for x in nx.enumerate_all_cliques(G) if len(x) >= 3])
-        self.highlitght = self.color_max_cliques(max_cliques)
+        # self.highlitght = self.color_max_cliques(max_cliques)
         adjacency_matrix = nx.adjacency_matrix(G, weight=None)
         incidence_matrix = nx.incidence_matrix(G, weight=None, oriented=False)
 
@@ -263,3 +266,22 @@ class UsAirlines:
         ax.plot(x_no_duplicates, y_count, 'r')
         plt.savefig(graphs_dir)
         plt.close()
+
+    def edge_weight_labels(self, edges):
+        edge_labels = {}
+        max_val = 0
+        min_val = 1
+        for connection in edges:
+            key = (connection[0], connection[1])
+            value = connection[2]
+
+            edge_labels[key] = value
+            
+            if value > max_val:
+                max_val = value
+                print(max_val, connection)
+            if value < min_val:
+                min_val = value
+                print(min_val, connection)
+
+        return edge_labels
