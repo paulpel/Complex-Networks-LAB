@@ -4,6 +4,7 @@ import shutil
 import networkx as nx
 import matplotlib.pyplot as plt
 from .colors_terminal import bcolors
+from math import dist
 
 
 class UsAirlines:
@@ -123,7 +124,7 @@ class UsAirlines:
 
         if not self.show_labels:
             labels = None
-
+        print(len(edges))
         G.add_weighted_edges_from(edges)
 
         degree = self.print_graph_character(G)
@@ -136,7 +137,7 @@ class UsAirlines:
             node_color=color_map, node_shape='h')
 
         edge_labels = self.edge_weight_labels(edges)
-        nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color='red')
+        # nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color='red')
 
         fig.set_facecolor('#6D9BC3')
         fig.canvas.set_window_title('USA airline connections 1997')
@@ -280,8 +281,12 @@ class UsAirlines:
             if value > max_val:
                 max_val = value
                 print(max_val, connection)
-            if value < min_val:
-                min_val = value
-                print(min_val, connection)
+                x1 = self.airport_data['airports'][str(connection[0])]['x_y_z_cords'][0]
+                y1 = self.airport_data['airports'][str(connection[0])]['x_y_z_cords'][1]
+                x2 = self.airport_data['airports'][str(connection[1])]['x_y_z_cords'][0]
+                y2 = self.airport_data['airports'][str(connection[1])]['x_y_z_cords'][1]
+                a = (x1, y1)
+                b = (x2, y2)
+                print(dist(a, b))
 
         return edge_labels
