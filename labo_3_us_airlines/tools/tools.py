@@ -17,7 +17,10 @@ class UsAirlines:
         self.nodes_to_take = [
             311, 150, 248, 118, 293, 258, 69, 161, 263, 261, 297, 4, 1, 2, 8, 6
             ]
-        self.highlitght = []
+        self.nodes_to_take = [
+            8, 13, 118, 313, 329, 201, 67,112 
+            ]
+        self.highlitght = [118]
         self.limited = limited
         self.show_graph = show_graph
         self.show_labels = show_labels
@@ -28,6 +31,10 @@ class UsAirlines:
             "connections": []
         }
         self.connections = []
+
+        self.node_color = '#B6465F'
+        self.node_color_h = '#CBF3D2'
+        self.background_color = '#D6CFCB'
 
     def main(self):
         self.load_data()
@@ -106,9 +113,9 @@ class UsAirlines:
         color_map = []
         for node in G:
             if node in self.highlitght:
-                color_map.append('#CEFF00')
+                color_map.append(self.node_color_h)
             else:
-                color_map.append('#FF8243')
+                color_map.append(self.node_color)
         return color_map
 
     def print_graph(self):
@@ -127,16 +134,23 @@ class UsAirlines:
 
         G.add_weighted_edges_from(edges)
 
-        if self.calc_stats:
-            degree = self.print_graph_character(G)
-            self.node_degree_hist(list(degree))
+        degree = self.print_graph_character(G)
+        self.node_degree_hist(list(degree))
+        weights = []
+        for edge in edges:
+            try:
+                weight = self.between_e_dict[(edge[0], edge[1])]
+                weights.append(weight)
+            except Exception:
+                weight = self.between_e_dict[(edge[1], edge[0])]
+                weights.append(weight)
 
         color_map = self.color_specific_nodes(G)
 
         nx.draw(
             G, pos=pos, labels=labels, with_labels=True,
-            font_size=8, edge_color='#C8A2C8', node_size=200,
-            node_color=color_map, node_shape='h')
+            font_size=8, node_size=200, edge_color=weights, edgelist=edges,
+            node_color=color_map, node_shape='o', edge_cmap=plt.cm.Purples, width=3)
 
         edge_labels = self.edge_weight_labels(edges)
 
@@ -144,7 +158,7 @@ class UsAirlines:
             nx.draw_networkx_edge_labels(
                 G, pos, edge_labels=edge_labels, font_color='red')
 
-        fig.set_facecolor('#6D9BC3')
+        fig.set_facecolor(self.background_color)
         fig.canvas.set_window_title('USA airline connections 1997')
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
 
@@ -159,65 +173,6 @@ class UsAirlines:
                     connection[1] in nodes_to_take):
                 filtered_connections.append(connection)
         return filtered_connections
-
-    def print_graph_character(self, G):
-        density = nx.density(G)
-        degree = nx.degree(G)
-        close = nx.closeness_centrality(G)
-        between = nx.betweenness_centrality(G)
-        diameter = nx.diameter(G)
-        connected_c = nx.connected_components(G)
-        n = 4
-        connected_n = nx.is_k_edge_connected(G, n)
-        connectivity_e = nx.edge_connectivity(G)
-        connectivity_n = nx.node_connectivity(G)
-        edges = nx.number_of_edges(G)
-        nodes = nx.number_of_nodes(G)
-        path_av = nx.average_shortest_path_length(G)
-        cliques = [x for x in nx.find_cliques(G)]
-        max_cliques = self.maximum_cliques(cliques)
-        self.highlitght = self.color_max_cliques(max_cliques)
-        adjacency_matrix = nx.adjacency_matrix(G, weight=None)
-        incidence_matrix = nx.incidence_matrix(G, weight=None, oriented=False)
-
-        print(f'{bcolors.OKCYAN}Gęstość: {bcolors.ENDC}{density}')
-        print(f"{bcolors.OKCYAN}Średnica {bcolors.ENDC}{diameter}")
-        print(
-            f"{bcolors.OKCYAN}Czy jest k-spójny dla k={n}:"
-            f"{bcolors.ENDC}{connected_n}")
-        print(
-            f"{bcolors.OKCYAN}Spójność krawędziowa: "
-            f"{bcolors.ENDC}{connectivity_e}")
-        print(
-            f"{bcolors.OKCYAN}Spójność wierzchołkowa: "
-            f"{bcolors.ENDC}{connectivity_n}")
-        print(f"{bcolors.OKCYAN}Ilość krawędzi: {bcolors.ENDC}{edges}")
-        print(f"{bcolors.OKCYAN}Ilość wierzchołków: {bcolors.ENDC}{nodes}")
-        print(
-            f"{bcolors.OKCYAN}Średnia długość ścieki: "
-            f"{bcolors.ENDC}{path_av}")
-        print(f"{bcolors.OKCYAN}Maksymalne kliki grafu: {bcolors.ENDC}")
-        for x in max_cliques:
-            print(x)
-        if True:
-            print(f"{bcolors.OKCYAN}Stopnie: {bcolors.ENDC}{degree}")
-            print(f"{bcolors.OKCYAN}Bliskość: {bcolors.ENDC}{close}")
-            print(f"{bcolors.OKCYAN}Pośrednictwo: {bcolors.ENDC}{between}")
-            for x in connected_c:
-                print(
-                    f"{bcolors.OKCYAN}Składowa spójna: {bcolors.ENDC}", x)
-            print(
-                f"{bcolors.OKCYAN}Maksymalne kliki wierzchołków: "
-                f"{bcolors.ENDC}")
-            for x in cliques:
-                print(x)
-            print(
-                f"{bcolors.OKCYAN}Wierzchołki: {bcolors.ENDC}{G.nodes()}")
-            print(f"{bcolors.OKCYAN}Macierz sąsiedctwa: {bcolors.ENDC}")
-            print(adjacency_matrix.todense())
-            print(f"{bcolors.OKCYAN}Macierz incydencji: {bcolors.ENDC}")
-            print(incidence_matrix.todense())
-        return degree
 
     def maximum_cliques(self, cliques):
         lenght = 0
@@ -268,10 +223,64 @@ class UsAirlines:
 
     def edge_weight_labels(self, edges):
         edge_labels = {}
-        for connection in edges:
-            key = (connection[0], connection[1])
-            value = connection[2]
+        for edge in edges:
+            key = (edge[0], edge[1])
+            try:
+                value = round(self.between_e_dict[(edge[0], edge[1])], 4)
+            except Exception:
+                value = round(self.between_e_dict[(edge[1], edge[0])], 4)
 
             edge_labels[key] = value
 
         return edge_labels
+
+    def print_graph_character(self, G):
+        edges = nx.number_of_edges(G)
+        nodes = nx.number_of_nodes(G)
+        density = nx.density(G)
+        degree = nx.degree(G)
+        degree = sorted(degree, key=lambda x: x[1], reverse=True)
+        average_degree = sum([elem[1] for elem in degree])/len(degree)
+        diameter = nx.diameter(G)
+        between_n = sorted(
+            list(nx.betweenness_centrality(G).items()), key=lambda x: x[1], reverse=False)
+        least_important_nodes = [elem[0] for elem in between_n if elem[1] == 0]
+        path_av = nx.average_shortest_path_length(G)
+        # self.highlitght.extend([elem[0] for elem in between_n[:3]])
+        cliques = [x for x in nx.find_cliques(G)]
+        max_cliques = self.maximum_cliques(cliques)
+        self.between_e_dict = nx.edge_betweenness_centrality(G)
+        between_e = sorted(list(
+            self.between_e_dict.items()), key=lambda x: x[1], reverse=True)
+
+        if self.calc_stats:
+            print(f"{bcolors.OKCYAN}Liczba wierzchołków: {bcolors.ENDC}{nodes}")
+            print(f"{bcolors.OKCYAN}Liczba krawędzi: {bcolors.ENDC}{edges}")
+            print(f'{bcolors.OKCYAN}Gęstość: {bcolors.ENDC}{density}')
+            print(
+                f'{bcolors.OKCYAN}Maksymalny stopień: '
+                f'{bcolors.ENDC}{max(degree,key=lambda item:item[1])[1]}')
+            print(
+                f'{bcolors.OKCYAN}Minimalny stopień: '
+                f'{bcolors.ENDC}{min(degree,key=lambda item:item[1])[1]}')
+            print(
+                f'{bcolors.OKCYAN}Średni stopień wierzchołków: '
+                f'{bcolors.ENDC}{average_degree}')
+            print(f"{bcolors.OKCYAN}Średnica: {bcolors.ENDC}{diameter}")
+            print(
+                f"{bcolors.OKCYAN}Średnia długość ścieki: "
+                f"{bcolors.ENDC}{path_av}")
+            print(
+                f'{bcolors.OKCYAN}20 wierzchołków o największym pośrednictwie: '
+                f'{bcolors.ENDC}{[elem[0] for elem in between_n[:20]]}')
+            print(
+                f'{bcolors.OKCYAN}Wierzchołków o najmniejszym pośrednictwie: '
+                f'{bcolors.ENDC}{least_important_nodes}')
+            print(f"{bcolors.OKCYAN}Maksymalne kliki grafu: {bcolors.ENDC}")
+            for x in max_cliques:
+                print(x)
+            print(
+                f'{bcolors.OKCYAN}5 krawędzi o największym pośrednictwie: '
+                f'{bcolors.ENDC}{[elem[0] for elem in between_e[:6]]}')
+
+        return degree
