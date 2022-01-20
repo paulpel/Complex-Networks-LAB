@@ -11,7 +11,7 @@ class UsAirlines:
     def __init__(
             self, script_path,
             limited, show_graph,
-            show_labels, print_stats, edge_labels) -> None:
+            show_labels, edge_labels, calc_stats) -> None:
 
         self.script_path = script_path
         self.nodes_to_take = [
@@ -21,8 +21,8 @@ class UsAirlines:
         self.limited = limited
         self.show_graph = show_graph
         self.show_labels = show_labels
-        self.print_stats = print_stats
         self.draw_edge_labels = edge_labels
+        self.calc_stats = calc_stats
         self.airport_data = {
             "airports": {},
             "connections": []
@@ -127,9 +127,11 @@ class UsAirlines:
 
         G.add_weighted_edges_from(edges)
 
-        degree = self.print_graph_character(G)
+        if self.calc_stats:
+            degree = self.print_graph_character(G)
+            self.node_degree_hist(list(degree))
+
         color_map = self.color_specific_nodes(G)
-        self.node_degree_hist(list(degree))
 
         nx.draw(
             G, pos=pos, labels=labels, with_labels=True,
@@ -174,54 +176,47 @@ class UsAirlines:
         path_av = nx.average_shortest_path_length(G)
         cliques = [x for x in nx.find_cliques(G)]
         max_cliques = self.maximum_cliques(cliques)
-        if self.limited:
-            cliques_bigger_than_3 = len(
-                [x for x in nx.enumerate_all_cliques(G) if len(x) >= 3])
-        # self.highlitght = self.color_max_cliques(max_cliques)
+        self.highlitght = self.color_max_cliques(max_cliques)
         adjacency_matrix = nx.adjacency_matrix(G, weight=None)
         incidence_matrix = nx.incidence_matrix(G, weight=None, oriented=False)
 
-        if self.print_stats:
-            print(f'{bcolors.OKCYAN}Gęstość: {bcolors.ENDC}{density}')
-            print(f"{bcolors.OKCYAN}Średnica {bcolors.ENDC}{diameter}")
+        print(f'{bcolors.OKCYAN}Gęstość: {bcolors.ENDC}{density}')
+        print(f"{bcolors.OKCYAN}Średnica {bcolors.ENDC}{diameter}")
+        print(
+            f"{bcolors.OKCYAN}Czy jest k-spójny dla k={n}:"
+            f"{bcolors.ENDC}{connected_n}")
+        print(
+            f"{bcolors.OKCYAN}Spójność krawędziowa: "
+            f"{bcolors.ENDC}{connectivity_e}")
+        print(
+            f"{bcolors.OKCYAN}Spójność wierzchołkowa: "
+            f"{bcolors.ENDC}{connectivity_n}")
+        print(f"{bcolors.OKCYAN}Ilość krawędzi: {bcolors.ENDC}{edges}")
+        print(f"{bcolors.OKCYAN}Ilość wierzchołków: {bcolors.ENDC}{nodes}")
+        print(
+            f"{bcolors.OKCYAN}Średnia długość ścieki: "
+            f"{bcolors.ENDC}{path_av}")
+        print(f"{bcolors.OKCYAN}Maksymalne kliki grafu: {bcolors.ENDC}")
+        for x in max_cliques:
+            print(x)
+        if True:
+            print(f"{bcolors.OKCYAN}Stopnie: {bcolors.ENDC}{degree}")
+            print(f"{bcolors.OKCYAN}Bliskość: {bcolors.ENDC}{close}")
+            print(f"{bcolors.OKCYAN}Pośrednictwo: {bcolors.ENDC}{between}")
+            for x in connected_c:
+                print(
+                    f"{bcolors.OKCYAN}Składowa spójna: {bcolors.ENDC}", x)
             print(
-                f"{bcolors.OKCYAN}Czy jest k-spójny dla k={n}:"
-                f"{bcolors.ENDC}{connected_n}")
-            print(
-                f"{bcolors.OKCYAN}Spójność krawędziowa: "
-                f"{bcolors.ENDC}{connectivity_e}")
-            print(
-                f"{bcolors.OKCYAN}Spójność wierzchołkowa: "
-                f"{bcolors.ENDC}{connectivity_n}")
-            print(f"{bcolors.OKCYAN}Ilość krawędzi: {bcolors.ENDC}{edges}")
-            print(f"{bcolors.OKCYAN}Ilość wierzchołków: {bcolors.ENDC}{nodes}")
-            print(
-                f"{bcolors.OKCYAN}Średnia długość ścieki: "
-                f"{bcolors.ENDC}{path_av}")
-            print(f"{bcolors.OKCYAN}Maksymalne kliki grafu: {bcolors.ENDC}")
-            for x in max_cliques:
+                f"{bcolors.OKCYAN}Maksymalne kliki wierzchołków: "
+                f"{bcolors.ENDC}")
+            for x in cliques:
                 print(x)
-            if self.limited:
-                print(f"{bcolors.OKCYAN}Stopnie: {bcolors.ENDC}{degree}")
-                print(f"{bcolors.OKCYAN}Bliskość: {bcolors.ENDC}{close}")
-                print(f"{bcolors.OKCYAN}Pośrednictwo: {bcolors.ENDC}{between}")
-                for x in connected_c:
-                    print(
-                        f"{bcolors.OKCYAN}Składowa spójna: {bcolors.ENDC}", x)
-                print(
-                    f"{bcolors.OKCYAN}Liczba klik większych/równych 3: "
-                    f"{bcolors.ENDC}{cliques_bigger_than_3}")
-                print(
-                    f"{bcolors.OKCYAN}Maksymalne kliki wierzchołków: "
-                    f"{bcolors.ENDC}")
-                for x in cliques:
-                    print(x)
-                print(
-                    f"{bcolors.OKCYAN}Wierzchołki: {bcolors.ENDC}{G.nodes()}")
-                print(f"{bcolors.OKCYAN}Macierz sąsiedctwa: {bcolors.ENDC}")
-                print(adjacency_matrix.todense())
-                print(f"{bcolors.OKCYAN}Macierz incydencji: {bcolors.ENDC}")
-                print(incidence_matrix.todense())
+            print(
+                f"{bcolors.OKCYAN}Wierzchołki: {bcolors.ENDC}{G.nodes()}")
+            print(f"{bcolors.OKCYAN}Macierz sąsiedctwa: {bcolors.ENDC}")
+            print(adjacency_matrix.todense())
+            print(f"{bcolors.OKCYAN}Macierz incydencji: {bcolors.ENDC}")
+            print(incidence_matrix.todense())
         return degree
 
     def maximum_cliques(self, cliques):

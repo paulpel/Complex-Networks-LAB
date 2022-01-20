@@ -16,42 +16,42 @@ parser.add_argument(
 parser.add_argument(
     '-l',
     '--limited',
-    help='set limited node mode',
+    help='limit nodes',
     action='store_true',
     default=False,
     dest='limited',
 )
 parser.add_argument(
-    '-sg',
-    '--show_graph',
+    '-p',
+    '--plot',
     help='Plot graph.',
     action='store_true',
     default=False,
-    dest='show_graph',
+    dest='plot',
 )
 parser.add_argument(
-    '-sl',
-    '--show_labels',
+    '-n',
+    '--node_labels',
     help='Show node labels',
     action='store_true',
     default=False,
-    dest='show_labels',
+    dest='node_labels',
 )
 parser.add_argument(
-    '-ps',
-    '--print_stats',
-    help='Print graph statistics',
-    action='store_true',
-    default=False,
-    dest='print_stats',
-)
-parser.add_argument(
-    '-dl',
-    '--draw_edge',
+    '-e',
+    '--edge_labels',
     help='Draw edge labels',
     action='store_true',
     default=False,
-    dest='draw_edge',
+    dest='edge_labels',
+)
+parser.add_argument(
+    '-s',
+    '--calc_stats',
+    help='Draw edge labels',
+    action='store_true',
+    default=False,
+    dest='calc_stats',
 )
 
 args = parser.parse_args()
@@ -70,10 +70,10 @@ elif args.project == '3':
 
     main_airlines(
         args.limited,
-        args.show_graph,
-        args.show_labels,
-        args.print_stats,
-        args.draw_edge)
+        args.plot,
+        args.node_labels,
+        args.edge_labels,
+        args.calc_stats)
 
     end_time = time.time()
     print(
