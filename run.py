@@ -45,6 +45,14 @@ parser.add_argument(
     default=False,
     dest='print_stats',
 )
+parser.add_argument(
+    '-dl',
+    '--draw_edge',
+    help='Draw edge labels',
+    action='store_true',
+    default=False,
+    dest='draw_edge',
+)
 
 args = parser.parse_args()
 paths = {
@@ -64,7 +72,8 @@ elif args.project == '3':
         args.limited,
         args.show_graph,
         args.show_labels,
-        args.print_stats)
+        args.print_stats,
+        args.draw_edge)
 
     end_time = time.time()
     print(

@@ -4,7 +4,6 @@ import shutil
 import networkx as nx
 import matplotlib.pyplot as plt
 from .colors_terminal import bcolors
-from math import dist
 
 
 class UsAirlines:
@@ -12,17 +11,18 @@ class UsAirlines:
     def __init__(
             self, script_path,
             limited, show_graph,
-            show_labels, print_stats) -> None:
+            show_labels, print_stats, edge_labels) -> None:
 
         self.script_path = script_path
         self.nodes_to_take = [
             311, 150, 248, 118, 293, 258, 69, 161, 263, 261, 297, 4, 1, 2, 8, 6
             ]
-        self.highlitght = [248, 331, 13, 14]
+        self.highlitght = []
         self.limited = limited
         self.show_graph = show_graph
         self.show_labels = show_labels
         self.print_stats = print_stats
+        self.draw_edge_labels = edge_labels
         self.airport_data = {
             "airports": {},
             "connections": []
@@ -124,7 +124,7 @@ class UsAirlines:
 
         if not self.show_labels:
             labels = None
-        print(len(edges))
+
         G.add_weighted_edges_from(edges)
 
         degree = self.print_graph_character(G)
@@ -137,7 +137,10 @@ class UsAirlines:
             node_color=color_map, node_shape='h')
 
         edge_labels = self.edge_weight_labels(edges)
-        # nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color='red')
+
+        if self.draw_edge_labels:
+            nx.draw_networkx_edge_labels(
+                G, pos, edge_labels=edge_labels, font_color='red')
 
         fig.set_facecolor('#6D9BC3')
         fig.canvas.set_window_title('USA airline connections 1997')
@@ -270,23 +273,10 @@ class UsAirlines:
 
     def edge_weight_labels(self, edges):
         edge_labels = {}
-        max_val = 0
-        min_val = 1
         for connection in edges:
             key = (connection[0], connection[1])
             value = connection[2]
 
             edge_labels[key] = value
-
-            if value > max_val:
-                max_val = value
-                print(max_val, connection)
-                x1 = self.airport_data['airports'][str(connection[0])]['x_y_z_cords'][0]
-                y1 = self.airport_data['airports'][str(connection[0])]['x_y_z_cords'][1]
-                x2 = self.airport_data['airports'][str(connection[1])]['x_y_z_cords'][0]
-                y2 = self.airport_data['airports'][str(connection[1])]['x_y_z_cords'][1]
-                a = (x1, y1)
-                b = (x2, y2)
-                print(dist(a, b))
 
         return edge_labels
