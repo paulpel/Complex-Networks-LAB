@@ -17,9 +17,6 @@ class UsAirlines:
         self.nodes_to_take = [
             311, 150, 248, 118, 293, 258, 69, 161, 263, 261, 297, 4, 1, 2, 8, 6
             ]
-        self.nodes_to_take = [
-            8, 13, 118, 313, 329, 201, 67,112 
-            ]
         self.highlitght = [118]
         self.limited = limited
         self.show_graph = show_graph
