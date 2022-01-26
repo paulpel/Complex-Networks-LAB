@@ -302,7 +302,7 @@ class UsAirlines:
         cant_remove = []
         for edge in edges:
             temp = G
-            temp.remove_edge(edge)
+            temp.remove_edge(edge[0], edge[1])
             if nx.is_connected(temp):
                 continue
             else:
