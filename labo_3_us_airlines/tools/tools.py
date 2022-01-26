@@ -38,7 +38,12 @@ class UsAirlines:
         self.create_output_dir()
         self.export_json()
         self.limit_edges()
-        self.print_graph()
+        G = self.print_graph()
+        self.shortest_paths(G)
+        self.calculate(G)
+
+        if self.show_graph:
+            plt.show()
 
     def load_data(self):
         file_path = os.path.join(self.script_path, 'data', 'USAir97.net')
@@ -159,8 +164,7 @@ class UsAirlines:
         fig.canvas.set_window_title('USA airline connections 1997')
         plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
 
-        if self.show_graph:
-            plt.show()
+        return G
 
     def limit_edges(self):
         nodes_to_take = self.nodes_to_take
@@ -281,3 +285,26 @@ class UsAirlines:
                 f'{bcolors.ENDC}{[elem[0] for elem in between_e[:6]]}')
 
         return degree
+
+    def shortest_paths(self, G):
+        paths = nx.shortest_path(G)
+        n_of_transfers = {}
+
+        for key, value in paths.items():
+            n_of_transfers[key] = {}
+            for k, v in value.items():
+                n_of_transfers[key][k] = len(v) - 2
+
+        return n_of_transfers
+
+    def calculate(self, G):
+        edges = nx.edges(G)
+        cant_remove = []
+        for edge in edges:
+            temp = G
+            temp.remove_edge(edge)
+            if nx.is_connected(temp):
+                continue
+            else:
+                cant_remove.append(edge)
+        print(cant_remove)
