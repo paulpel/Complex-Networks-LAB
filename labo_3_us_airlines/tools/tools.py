@@ -1,3 +1,4 @@
+from operator import index
 import os
 import json
 import shutil
@@ -42,7 +43,7 @@ class UsAirlines:
         self.export_json()
         self.limit_edges()
         G = self.print_graph()
-        self.calculate(G)
+        # self.calculate(G)
 
         if self.show_graph:
             plt.show()
@@ -294,7 +295,6 @@ class UsAirlines:
         edges = list(nx.edges(G))
         all_connections = list(itertools.combinations(nx.nodes(G), 2))
         cant_remove = []
-        results = []
 
         for edge in edges:
             temp = G.copy()
@@ -315,12 +315,19 @@ class UsAirlines:
         
         success = 0
         total_deleted = 0
-        for i in range(50):
-            print(i/50)
+
+        distance_check = 10000
+        best_solution_distance = -1
+        all_solution = []
+        total_transfers = []
+        total_dist = []
+       
+        for i in range(100):
+            print(f'{i} %')
             edges_delete = random.choices(
                 edges_list,
                 weights=edges_prob,
-                k=10
+                k=19
             )
             tmp = G.copy()
             tmp.remove_edges_from(edges_delete)
@@ -328,20 +335,99 @@ class UsAirlines:
                 paths_tmp = dict(nx.shortest_path_length(tmp))
                 distance_tmp = dict(nx.all_pairs_dijkstra_path_length(tmp))
                 flag = True
+
+                max_distance = 0
+                total_transfer = 0
                 for connection in all_connections:
                     dif = paths_tmp[connection[0]][connection[1]] - paths[connection[0]][connection[1]]
                     dif_distance = distance_tmp[connection[0]][connection[1]]/distance[connection[0]][connection[1]]
                     if dif > 1:
                         flag = False
                         break
-                    elif dif_distance > 10:
+                    elif dif_distance > 2:
                         flag = False
                         break
-                    
-                if flag == True:
+                    else:
+                        total_transfer += dif
+
+                    if dif_distance > max_distance:
+                        max_distance = dif_distance
+
+                if flag:
+                    if max_distance < distance_check:
+                        distance_check = max_distance
+                        best_solution_distance = edges_delete
+                        total_transfer_dist = total_transfer
+
+                    all_solution.append(edges_delete)
+                    total_transfers.append(total_transfer)
+                    total_dist.append(dif_distance)
                     success += 1
                     total_deleted += len(edges_delete)
-                    results.append(edges_delete)
 
-        print(success, total_deleted/success)
-        print(results)
+        print('\n')
+        if success != 0:
+            print(success)
+            print(f'Procentowy sukces: {success/100}')
+            print(f'Średnio usunięto: {total_deleted/success}')
+            print(
+                f'Najlepsze rozwiązanie dystansowe: {best_solution_distance} '
+                f'Maksymalne wydłuenie: {max_distance} '
+                f'Ilość przesiadek: {total_transfer_dist}')
+            index_min = min(range(len(total_transfers)), key=total_transfers.__getitem__)
+            print(
+                f'Najlepsze rozwiązanie przesiadkowe: {all_solution[index_min]} '
+                f'Ilość dodatkowych przesiadek: {min(total_transfers)} '
+                f'Maksymalne wydłuenie: {total_dist[index_min]} ')
+
+            tmp2 = G.copy()
+            tmp2.remove_edges_from(best_solution_distance)
+
+            density = nx.density(tmp2)
+            degree = nx.degree(tmp2)
+            degree = sorted(degree, key=lambda x: x[1], reverse=True)
+            average_degree = sum([elem[1] for elem in degree])/len(degree)
+            diameter = nx.diameter(tmp2)
+            path_av = nx.average_shortest_path_length(tmp2)
+            print('\n')
+            print('***Dystansowe***')
+            print(f'{bcolors.OKCYAN}Gęstość: {bcolors.ENDC}{density}')
+            print(
+                f'{bcolors.OKCYAN}Maksymalny stopień: '
+                f'{bcolors.ENDC}{max(degree,key=lambda item:item[1])[1]}')
+            print(
+                f'{bcolors.OKCYAN}Minimalny stopień: '
+                f'{bcolors.ENDC}{min(degree,key=lambda item:item[1])[1]}')
+            print(
+                f'{bcolors.OKCYAN}Średni stopień wierzchołków: '
+                f'{bcolors.ENDC}{average_degree}')
+            print(f"{bcolors.OKCYAN}Średnica: {bcolors.ENDC}{diameter}")
+            print(
+                f"{bcolors.OKCYAN}Średnia długość ścieki: "
+                f"{bcolors.ENDC}{path_av}")
+
+            tmp3 = G.copy()
+            tmp3.remove_edges_from(all_solution[index_min])
+
+            density = nx.density(tmp3)
+            degree = nx.degree(tmp3)
+            degree = sorted(degree, key=lambda x: x[1], reverse=True)
+            average_degree = sum([elem[1] for elem in degree])/len(degree)
+            diameter = nx.diameter(tmp3)
+            path_av = nx.average_shortest_path_length(tmp3)
+            print('\n')
+            print('***Przesiadkowe***')
+            print(f'{bcolors.OKCYAN}Gęstość: {bcolors.ENDC}{density}')
+            print(
+                f'{bcolors.OKCYAN}Maksymalny stopień: '
+                f'{bcolors.ENDC}{max(degree,key=lambda item:item[1])[1]}')
+            print(
+                f'{bcolors.OKCYAN}Minimalny stopień: '
+                f'{bcolors.ENDC}{min(degree,key=lambda item:item[1])[1]}')
+            print(
+                f'{bcolors.OKCYAN}Średni stopień wierzchołków: '
+                f'{bcolors.ENDC}{average_degree}')
+            print(f"{bcolors.OKCYAN}Średnica: {bcolors.ENDC}{diameter}")
+            print(
+                f"{bcolors.OKCYAN}Średnia długość ścieki: "
+                f"{bcolors.ENDC}{path_av}")
