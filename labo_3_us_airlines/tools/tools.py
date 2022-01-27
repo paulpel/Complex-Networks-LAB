@@ -1,9 +1,12 @@
 import os
 import json
 import shutil
+from turtle import distance
 import networkx as nx
 import matplotlib.pyplot as plt
 from .colors_terminal import bcolors
+import itertools
+import random
 
 
 class UsAirlines:
@@ -39,7 +42,6 @@ class UsAirlines:
         self.export_json()
         self.limit_edges()
         G = self.print_graph()
-        self.shortest_paths(G)
         self.calculate(G)
 
         if self.show_graph:
@@ -126,39 +128,39 @@ class UsAirlines:
 
         if self.limited:
             edges = self.limit_edges()
-            labels, pos = self.prepare_for_networkx(True)
+            self.labels, self.pos = self.prepare_for_networkx(True)
         else:
             edges = self.airport_data['connections']
-            labels, pos = self.prepare_for_networkx()
+            self.labels, self.pos = self.prepare_for_networkx()
 
         if not self.show_labels:
-            labels = None
+            self.labels = None
 
         G.add_weighted_edges_from(edges)
 
         degree = self.print_graph_character(G)
         self.node_degree_hist(list(degree))
-        weights = []
+        self.weights = []
         for edge in edges:
             try:
                 weight = self.between_e_dict[(edge[0], edge[1])]
-                weights.append(weight)
+                self.weights.append(weight)
             except Exception:
                 weight = self.between_e_dict[(edge[1], edge[0])]
-                weights.append(weight)
+                self.weights.append(weight)
 
-        color_map = self.color_specific_nodes(G)
+        self.color_map = self.color_specific_nodes(G)
 
         nx.draw(
-            G, pos=pos, labels=labels, with_labels=True,
-            font_size=8, node_size=200, edge_color=weights, edgelist=edges,
-            node_color=color_map, node_shape='o', edge_cmap=plt.cm.Purples, width=3)
+            G, pos=self.pos, labels=self.labels, with_labels=True,
+            font_size=8, node_size=200, edge_color=self.weights, edgelist=edges,
+            node_color=self.color_map, node_shape='o', edge_cmap=plt.cm.Purples, width=3)
 
         edge_labels = self.edge_weight_labels(edges)
 
         if self.draw_edge_labels:
             nx.draw_networkx_edge_labels(
-                G, pos, edge_labels=edge_labels, font_color='red')
+                G, self.pos, edge_labels=edge_labels, font_color='red')
 
         fig.set_facecolor(self.background_color)
         fig.canvas.set_window_title('USA airline connections 1997')
@@ -286,25 +288,60 @@ class UsAirlines:
 
         return degree
 
-    def shortest_paths(self, G):
-        paths = nx.shortest_path(G)
-        n_of_transfers = {}
-
-        for key, value in paths.items():
-            n_of_transfers[key] = {}
-            for k, v in value.items():
-                n_of_transfers[key][k] = len(v) - 2
-
-        return n_of_transfers
-
     def calculate(self, G):
-        edges = nx.edges(G)
+        paths = dict(nx.shortest_path_length(G))
+        distance = dict(nx.all_pairs_dijkstra_path_length(G))
+        edges = list(nx.edges(G))
+        all_connections = list(itertools.combinations(nx.nodes(G), 2))
         cant_remove = []
+        results = []
+
         for edge in edges:
-            temp = G
+            temp = G.copy()
             temp.remove_edge(edge[0], edge[1])
             if nx.is_connected(temp):
                 continue
             else:
                 cant_remove.append(edge)
-        print(cant_remove)
+        edges = list(set(edges) - set(cant_remove))
+
+        edges_betweenness = nx.edge_betweenness_centrality(G)
+        edges_list = []
+        edges_prob = []
+
+        for i in edges_betweenness.keys():
+            edges_list.append(i)
+            edges_prob.append(1/edges_betweenness[i])
+        
+        success = 0
+        total_deleted = 0
+        for i in range(50):
+            print(i/50)
+            edges_delete = random.choices(
+                edges_list,
+                weights=edges_prob,
+                k=10
+            )
+            tmp = G.copy()
+            tmp.remove_edges_from(edges_delete)
+            if nx.is_connected(tmp):
+                paths_tmp = dict(nx.shortest_path_length(tmp))
+                distance_tmp = dict(nx.all_pairs_dijkstra_path_length(tmp))
+                flag = True
+                for connection in all_connections:
+                    dif = paths_tmp[connection[0]][connection[1]] - paths[connection[0]][connection[1]]
+                    dif_distance = distance_tmp[connection[0]][connection[1]]/distance[connection[0]][connection[1]]
+                    if dif > 1:
+                        flag = False
+                        break
+                    elif dif_distance > 10:
+                        flag = False
+                        break
+                    
+                if flag == True:
+                    success += 1
+                    total_deleted += len(edges_delete)
+                    results.append(edges_delete)
+
+        print(success, total_deleted/success)
+        print(results)
