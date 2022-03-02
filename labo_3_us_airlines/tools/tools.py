@@ -1,8 +1,6 @@
-from operator import index
 import os
 import json
 import shutil
-from turtle import distance
 import networkx as nx
 import matplotlib.pyplot as plt
 from .colors_terminal import bcolors
@@ -43,7 +41,7 @@ class UsAirlines:
         self.export_json()
         self.limit_edges()
         G = self.print_graph()
-        # self.calculate(G)
+        self.calculate(G)
 
         if self.show_graph:
             plt.show()
@@ -312,7 +310,7 @@ class UsAirlines:
         for i in edges_betweenness.keys():
             edges_list.append(i)
             edges_prob.append(1/edges_betweenness[i])
-        
+
         success = 0
         total_deleted = 0
 
@@ -321,7 +319,7 @@ class UsAirlines:
         all_solution = []
         total_transfers = []
         total_dist = []
-       
+
         for i in range(100):
             print(f'{i} %')
             edges_delete = random.choices(
